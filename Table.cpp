@@ -3,14 +3,15 @@
 void Table::setCellTypes()
 {
     std::string currentString;
-    int dots, numbers, otherSymbols;
+    std::size_t cols = this->getTableCols();
+    int dots, numbers, otherSymbols, counterForWhitespacesAndNumbers;
     for(std::size_t i = 0; i < this->table.size(); i++)
     {
         std::vector<std::size_t> vec;   
         for(std::size_t j = 0; j < this->table[i].size(); j++)
         {
             currentString = this->table[i][j];
-            dots = 0; numbers = 0; otherSymbols = 0;
+            dots = 0; numbers = 0; otherSymbols = 0; counterForWhitespacesAndNumbers = -1;
             for(std::size_t index = 0; index < currentString.size(); index++)
             {
                 if(currentString[index] == '.')
@@ -19,16 +20,22 @@ void Table::setCellTypes()
                 }
                 else if(currentString[index] >= '0' && currentString[index] <= '9')
                 {
+                    if(counterForWhitespacesAndNumbers == -1) counterForWhitespacesAndNumbers++;
+                    if(counterForWhitespacesAndNumbers == 1) counterForWhitespacesAndNumbers++;
                     numbers++;
                 } 
+                else if(currentString[index] == ' ')
+                {
+                    if(counterForWhitespacesAndNumbers == 0) counterForWhitespacesAndNumbers++;
                     
+                }
                 else
                 {
                     otherSymbols++;
                 }
             }
 
-            if(otherSymbols > 0 || dots > 1 || currentString.size() == 0)
+            if(otherSymbols > 0 || dots > 1 || currentString.size() == 0 || counterForWhitespacesAndNumbers > 1 || counterForWhitespacesAndNumbers == -1)
             {
                 vec.push_back((std::size_t)0);
             }
@@ -41,19 +48,54 @@ void Table::setCellTypes()
                 vec.push_back((std::size_t)1);
             }
         }
+
+        for(std::size_t index = vec.size(); index < cols; index++)
+        {
+            vec.push_back((std::size_t)0);
+        }
         this->tableForTypeOfTheCell.push_back(vec);
     }
+}
 
-    std::cout << "test" << std::endl;
-        for(std::size_t i = 0; i < this->tableForTypeOfTheCell.size(); i++)
+void Table::setOneCellType(const std::size_t row, const std::size_t col)
+{
+    std::string cell = this->table[row][col];
+    int dots = 0, numbers = 0, otherSymbols = 0, counterForWhitespacesAndNumbers=-1;
+    for(std::size_t index = 0; index < cell.size(); index++)
     {
-        for(std::size_t j = 0; j < this->tableForTypeOfTheCell[i].size(); j++)
+        if(cell[index] == '.')
         {
-            std::cout << this->tableForTypeOfTheCell[i][j] << ' ';
+            dots++;
         }
-        std::cout<<std::endl;
+        else if(cell[index] >= '0' && cell[index] <= '9')
+        {
+            if(counterForWhitespacesAndNumbers == -1) counterForWhitespacesAndNumbers++;
+            if(counterForWhitespacesAndNumbers == 1) counterForWhitespacesAndNumbers++;
+            numbers++;
+        }
+        else if(cell[index] == ' ')
+        {
+            if(counterForWhitespacesAndNumbers == 0) counterForWhitespacesAndNumbers++;
+
+        }
+        else
+        {
+            otherSymbols++;
+        }
     }
 
+    if(otherSymbols > 0 || dots > 1 || cell.size() == 0 || counterForWhitespacesAndNumbers > 1 || counterForWhitespacesAndNumbers == -1)
+    {
+        this->tableForTypeOfTheCell[row][col] = 0;
+    }
+    else if(dots == 1)
+    {
+        this->tableForTypeOfTheCell[row][col] = 2;
+    }
+    else 
+    {
+        this->tableForTypeOfTheCell[row][col] = 1;
+    }
 }
 
 const std::size_t Table::getTableCols() const
@@ -69,7 +111,6 @@ const std::size_t Table::getTableCols() const
 
 const std::vector<std::size_t> Table::getBiggestNumberOnEveryCol() const
 {
-    std::cout << "test3.1" << std::endl;
     std::vector<std::size_t> result;
     int cols = this->getTableCols();
 
@@ -97,8 +138,31 @@ const std::vector<std::size_t> Table::getBiggestNumberOnEveryCol() const
 
 void Table::setTable(const std::string file_path)
 {
+    if(com.getIsOpen())
+    {
+        std::cout << "Opened file, do you want to save it before u proceed" << std::endl;
+        std::cout << "Y - yes" << std::endl << "Anything else - no" << std::endl;
+        std::string choice;
+        std::cin >> choice;
+        if(choice.compare("Y") == 0)
+        {
+            std::cout << "File saved" << std::endl;
+            this->save();
+        }
+        this->close();
+    }
     table = com.open(file_path);
-    std::cout << "test1" <<std::endl;
+    std::size_t cols = this->getTableCols();
+    int diff;
+
+    for(std::size_t i = 0; i < table.size(); i++)
+    {
+        diff = cols - table[i].size();
+        for(diff; diff > 0; diff--)
+        {
+            table[i].push_back(" ");
+        }
+    }
     this->setCellTypes();
 }
 
@@ -134,6 +198,25 @@ const std::vector<std::vector<std::string>> Table::getTable() const
     return this->table;
 }
 
+void Table::edit(const std::size_t row, const std::size_t col, const std::string text)
+{
+    std::size_t r = row;
+    std::size_t c = col;
+    r--;
+    c--;
+
+    if(text[0] != '=')
+    {
+        this->table[r][c] = text;
+        this->setOneCellType(r,c);
+    }
+    else
+    {
+        this->table[r][c] = text;
+        this->setOneCellType(r,c);
+    }
+}
+
 void Table::save()
 {
     this->com.save(this->getTable());
@@ -144,3 +227,29 @@ void Table::saveAs(const std::string filePathToSave)
     this->com.saveAs(this->getTable(), filePathToSave);
 }
 
+void Table::close()
+{
+    this->com.close();
+}
+
+int Table::exit()
+{
+    return this->com.exit();
+}
+
+const void Table::printTable2() const
+{
+    for(std::size_t i = 0; i < this->tableForTypeOfTheCell.size(); i++)
+    {
+        for(std::size_t j = 0; j < this->tableForTypeOfTheCell[i].size(); j++)
+        {
+            std::cout << this->tableForTypeOfTheCell[i][j]<< ' ';
+        }
+        std::cout <<'\n';
+    }
+}
+
+void Table::help()
+{
+    this->com.help();
+}

@@ -57,19 +57,6 @@ std::vector<std::vector<std::string>> CMD::open(const std::string file_path)
 
     file.close();
 
-    //
-    for(std::size_t i = 0; i < currVector.size(); i++)
-    {
-        for(std::size_t j = 0; j < currVector[i].size(); j++)
-        {
-            std::cout << currVector[i][j] << ' ';
-        }
-        std::cout<<std::endl;
-    }
-
-    //
-
-    
     return currVector;
 }
 
@@ -120,6 +107,7 @@ int CMD::exit()
     if(getIsOpen())
     {
         std::cout << "You have an open file with unsaved changes, please select close or save first." << std::endl;
+        return 1;
     }
     else
     {
