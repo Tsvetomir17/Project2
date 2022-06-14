@@ -1,88 +1,135 @@
 #include "Table.h"
 
-void Table::setTable()
+void Table::setCellTypes()
 {
-    this->table = com.open("file.txt");   
+    std::string currentString;
+    int dots, numbers, otherSymbols;
+    for(std::size_t i = 0; i < this->table.size(); i++)
+    {
+        std::vector<std::size_t> vec;   
+        for(std::size_t j = 0; j < this->table[i].size(); j++)
+        {
+            currentString = this->table[i][j];
+            dots = 0; numbers = 0; otherSymbols = 0;
+            for(std::size_t index = 0; index < currentString.size(); index++)
+            {
+                if(currentString[index] == '.')
+                {
+                    dots++;
+                }
+                else if(currentString[index] >= '0' && currentString[index] <= '9')
+                {
+                    numbers++;
+                } 
+                    
+                else
+                {
+                    otherSymbols++;
+                }
+            }
+
+            if(otherSymbols > 0 || dots > 1 || currentString.size() == 0)
+            {
+                vec.push_back((std::size_t)0);
+            }
+            else if(dots == 1)
+            {
+                vec.push_back((std::size_t)2);
+            }
+            else 
+            {
+                vec.push_back((std::size_t)1);
+            }
+        }
+        this->tableForTypeOfTheCell.push_back(vec);
+    }
+
+    std::cout << "test" << std::endl;
+        for(std::size_t i = 0; i < this->tableForTypeOfTheCell.size(); i++)
+    {
+        for(std::size_t j = 0; j < this->tableForTypeOfTheCell[i].size(); j++)
+        {
+            std::cout << this->tableForTypeOfTheCell[i][j] << ' ';
+        }
+        std::cout<<std::endl;
+    }
+
+}
+
+const std::size_t Table::getTableCols() const
+{
+    std::size_t size = 0;
+    for(std::size_t i = 0; i < this->table.size(); i++)
+    {
+        if(this->table[i].size() > size) size = this->table[i].size();
+    }
+
+    return size;
+}
+
+const std::vector<std::size_t> Table::getBiggestNumberOnEveryCol() const
+{
+    std::cout << "test3.1" << std::endl;
+    std::vector<std::size_t> result;
+    int cols = this->getTableCols();
+
+    std::size_t* arr = new std::size_t[cols];
+    for(std::size_t i = 0; i < cols; i++) arr[i] = 0;
+
+    for(std::size_t i = 0; i < this->table.size(); i++)
+    {
+        for(std::size_t j = 0; j < this->table[i].size(); j++)
+        {
+            if(this->table[i][j].size() > arr[j])
+            {
+                arr[j] = this->table[i][j].size();
+            }
+        }
+    }
+    for(std::size_t i = 0; i < cols; i++)
+    {
+        result.push_back(arr[i]);
+    }
+ 
+    delete[] arr;
+    return result;
+}
+
+void Table::setTable(const std::string file_path)
+{
+    table = com.open(file_path);
+    std::cout << "test1" <<std::endl;
+    this->setCellTypes();
 }
 
 const void Table::print() const
 {
-    int maxPossibleCols = 0;
-    int cellsOnRow = 0, currCellsOnRow;
-    for(std::size_t i = 0; i < table.size(); i++)
-    {
-        if(table[i].size() > maxPossibleCols) maxPossibleCols = table[i].size();
-    }
+    std::size_t cols = this->getTableCols();
+    std::vector<std::size_t> maxNumberOnEveryCol = this->getBiggestNumberOnEveryCol();
+    std::size_t toTheMaxOnCurrentCell;
+    char whitespace = ' ';
+    std::string currCell;
 
-    int* maxSizeForCol = new int[maxPossibleCols];
-    for(int i = 0; i < maxPossibleCols; i++)
+    for(std::size_t i = 0; i < this->table.size(); i++)
     {
-        maxSizeForCol[i] = 0;
-    }
-
-    int index = 0;
-    int currentCol = 0;
-    for(std::size_t i = 0; i < table.size(); i++)
-    {
-        currentCol = 0;
-        index = 0;
-        currCellsOnRow = 0;
-
-        for(std::size_t k = 0; k < table[i].size(); k++)
+        std::cout << "|";
+        for(std::size_t j = 0; j < cols; j++)
         {
-            if(table[i][k] == ',' || k == table[i].size() - 1)
+            if(j >= table[i].size()) currCell = ""; 
+            else currCell = this->table[i][j];
+            std::cout << currCell;
+            toTheMaxOnCurrentCell = maxNumberOnEveryCol[j] - currCell.size();
+            for(int index = toTheMaxOnCurrentCell; index >= 0; index--)
             {
-                currCellsOnRow++;
-                if(currentCol > maxSizeForCol[index]) maxSizeForCol[index] = currentCol;
-                index++;
-                currentCol = -1;
-            }
-            currentCol++;
-        }
-        if(currCellsOnRow > cellsOnRow) cellsOnRow = currCellsOnRow;
-    }
-
-    int wordCount = 0;
-    int size = 0;
-    for(std::size_t i = 0; i < table.size(); i++)
-    {
-        wordCount = 0;
-        size = maxSizeForCol[wordCount];
-        for(std::size_t j = 0; j < table[i].size(); j++)
-        {
-            if(table[i][j] == ',')
-            {
-                for(size; size >= 0; size--)
-                {
-                    std::cout << ' ';
-                }
-
-                std::cout << "|";
-                size = maxSizeForCol[++wordCount];
-            }
-            else
-            {
-                size--;
-                std::cout << table[i][j];
-            }
-        }
-
-        for(wordCount; wordCount < cellsOnRow;)
-        {
-            for(size; size >= 0; size--)
-            {
-                std::cout << ' ';
+                std::cout << whitespace;
             }
             std::cout << "|";
-            size = maxSizeForCol[++wordCount];
         }
         std::cout << std::endl;
     }
-
-    delete[] maxSizeForCol;
 }
 
-const std::vector<std::string> Table::getTable() const
+const std::vector<std::vector<std::string>> Table::getTable() const
 {
     return this->table;
 }
@@ -96,3 +143,4 @@ void Table::saveAs(const std::string filePathToSave)
 {
     this->com.saveAs(this->getTable(), filePathToSave);
 }
+

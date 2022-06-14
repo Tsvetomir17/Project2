@@ -1,17 +1,21 @@
 #ifndef __TABLE_H
 #define __TABLE_H
-#include "Commands.h"
+#include "Cmd.h"
 
 class Table
 {
 private:
-    Commands com;
-    std::vector<std::string> table;
-    std::vector<std::string> tableOnlyForTypes;
-    
+    CMD com;
+    std::vector<std::vector<std::string>> table;
+    std::vector<std::vector<std::size_t>> tableForTypeOfTheCell; // 0 - string; 1 - int; 2 - double;
+    void setCellTypes();
+    const std::size_t getTableCols() const;
+    const std::vector<std::size_t> getBiggestNumberOnEveryCol() const;
+
 public:
-    void setTable();
-    const std::vector<std::string> getTable() const;
+    void setTable(const std::string file_path);
+    const std::vector<std::vector<std::string>> getTable() const;
+
     void save();
     void saveAs(const std::string filePathToSave);
 
