@@ -1,6 +1,6 @@
 #include "Cmd.h"
 
-CMD::CMD() : isOpen(false) {}
+CMD::CMD() : isOpen(false), filePath("") {}
 
 const void CMD::help() const
 {
@@ -70,6 +70,7 @@ void CMD::close()
 
     std::cout << "Successfully closed!" << std::endl;
     this->setIsOpen(false);
+    this->setFilePath("");
 }
 
 void CMD::save(const std::vector<std::vector<std::string>> currVector)
@@ -106,7 +107,7 @@ int CMD::exit()
 {
     if(getIsOpen())
     {
-        std::cout << "You have an open file with unsaved changes, please select close or save first." << std::endl;
+        std::cout << "You have an opened file , please close it first." << std::endl;
         return 1;
     }
     else

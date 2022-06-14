@@ -198,23 +198,79 @@ const std::vector<std::vector<std::string>> Table::getTable() const
     return this->table;
 }
 
-void Table::edit(const std::size_t row, const std::size_t col, const std::string text)
+void Table::edit(const std::string cell)
 {
-    std::size_t r = row;
-    std::size_t c = col;
-    r--;
-    c--;
-
-    if(text[0] != '=')
+    if(!isItCell(cell))
     {
-        this->table[r][c] = text;
-        this->setOneCellType(r,c);
+        std::cout << "Bad input" << std::endl;
+        return;
+    }
+    
+    Cell c(cell);
+
+    std::string toDo;
+    std::cout << "You have chosen to change cell R" << c.getRow() << "C" << c.getCol() << std::endl;
+    std::cout << "R" << c.getRow() << "C" << c.getCol() << ": "<< std::endl;
+
+    int row = c.getRow() - 1;
+    int col = c.getCol() - 1;
+
+    std::getline(std::cin, toDo);
+    std::string toCalculate;
+    std::string toCheck;
+    int index = 0;
+    if(toDo[index] == '=')
+    {
+        index++;
+        char whitespace = ' ';
+        for(index; index < toDo.size(); index++)
+        {
+            if((toDo[index] == whitespace ) || (toDo[index] >= '0' && toDo[index] <= '9') ||
+                toDo[index] == '+' || toDo[index] == '-' || toDo[index] == '*' || toDo[index] == '/' || 
+                toDo[index] == '^')
+            {
+                toCalculate.push_back(toDo[index]);
+                continue;
+            }
+
+            else if(toDo[index] == 'R')
+            {
+                toCheck.empty();
+                while(toDo[index] != whitespace && index <= toDo.size())
+                {
+                    toCheck.push_back(toDo[index]);
+                    index++;
+                }
+                if(isItCell(toCheck))
+                {
+                    Cell temp(toCheck);
+                    std::cout << "Check: " << toCheck << std::endl;
+                    std::string value = getCellValue(temp);
+                    toCalculate.append(value);
+                }
+            }
+            else
+            {
+                std::cout << "bad input" << std::endl;
+                return;
+            }
+        }
     }
     else
     {
-        this->table[r][c] = text;
-        this->setOneCellType(r,c);
+        if(isItCell(toDo))
+        {
+            Cell c(toDo);
+            toCalculate.append(getCellValue(c));
+        }
+        else
+        {
+            toCalculate = toDo;
+        }
     }
+
+    std::cout << toCalculate << std::endl;
+    this->setValue(row, col, calculation(toCalculate));
 }
 
 void Table::save()
@@ -253,3 +309,67 @@ void Table::help()
 {
     this->com.help();
 }
+
+bool Table::isItCell(const std::string cell)
+{
+    if(cell[0] != 'R')
+    {
+        return false;
+    } 
+
+    bool numberBetweenRandC = false, numberAferC = false;
+    int row = 0, col = 0;
+    std::size_t i = 1;
+    while(cell[i] != 'C' && i < cell.size())
+    {
+        if(cell[i] < '0' || cell[i] > '9')
+        {
+            return false;
+        }
+
+        numberBetweenRandC = true;
+        row *= 10;
+        row += cell[i++] - '0';
+    }
+
+    i++;
+    if(!numberBetweenRandC)
+    {
+        return false;
+    }
+
+    while(i < cell.size())
+    {
+        if(cell[i] < '0' || cell[i] > '9')
+        {
+            return false;
+        }
+        numberAferC = true;
+        col *= 10;
+        col += cell[i++] - '0';
+    }
+
+    if(!numberAferC)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+const std::string Table::getCellValue(const Cell& cell) const
+{
+    if(this->tableForTypeOfTheCell[cell.getRow() - 1][cell.getCol() - 1] > 0)
+    {
+        return this->table[cell.getRow() - 1][cell.getCol() - 1];
+    }
+
+    return "0";
+}
+
+void Table::setValue(const int row, const int col, const std::string value)
+{
+    this->table[row][col] = value;
+    setOneCellType(row,col);
+}
+
