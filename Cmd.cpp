@@ -16,6 +16,10 @@ const void CMD::help() const
 std::vector<std::vector<std::string>> CMD::open(const std::string file_path)
 {
     std::vector<std::vector<std::string>> currVector;
+    std::vector<std::vector<std::string>> randomVector;
+    std::vector<std::string> randomVec;
+    randomVec.push_back(" ,");
+    randomVector.push_back(randomVec);
 
     std::ifstream file(file_path);
     this->setFilePath(file_path);
@@ -25,7 +29,8 @@ std::vector<std::vector<std::string>> CMD::open(const std::string file_path)
     {
         file.close();
         std::ofstream file(file_path);
-        return currVector;
+        file.close();
+        return randomVector;
     }
 
     std::string str;

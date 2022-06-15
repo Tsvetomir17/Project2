@@ -235,16 +235,17 @@ void Table::edit(const std::string cell)
 
             else if(toDo[index] == 'R')
             {
-                toCheck.empty();
-                while(toDo[index] != whitespace && index <= toDo.size())
+                toCheck.clear();
+                while(toDo[index] != whitespace && toDo[index] != '+' && toDo[index] != '-' && toDo[index] != '*' &&
+                     toDo[index] != '/' && toDo[index] != '^' && index < toDo.size())
                 {
                     toCheck.push_back(toDo[index]);
                     index++;
                 }
+                index--;
                 if(isItCell(toCheck))
                 {
                     Cell temp(toCheck);
-                    std::cout << "Check: " << toCheck << std::endl;
                     std::string value = getCellValue(temp);
                     toCalculate.append(value);
                 }
@@ -261,15 +262,16 @@ void Table::edit(const std::string cell)
         if(isItCell(toDo))
         {
             Cell c(toDo);
+            std::cout << c.getCol() << c.getRow() << std::endl;
             toCalculate.append(getCellValue(c));
         }
         else
         {
-            toCalculate = toDo;
+            this->setValue(row, col, toDo);
+            return;
         }
     }
 
-    std::cout << toCalculate << std::endl;
     this->setValue(row, col, calculation(toCalculate));
 }
 
@@ -369,6 +371,70 @@ const std::string Table::getCellValue(const Cell& cell) const
 
 void Table::setValue(const int row, const int col, const std::string value)
 {
+    int tableCols = this->getTableCols();
+    int tableRows = this->table.size();
+
+    if(row >= tableRows && col < tableCols)
+    {
+        int diff = (row+1) - tableRows;
+        std::vector<std::string> vec;
+        std::vector<std::size_t> vec2;
+
+        for(int i = 0; i < diff; i++)
+        {
+            vec.clear();
+            vec2.clear();
+            for(int j = 0; j < tableCols; j++)
+            {
+                vec.push_back("");
+                vec2.push_back(0);
+            }
+            this->table.push_back(vec);
+            this->tableForTypeOfTheCell.push_back(vec2);
+        }
+    }
+    else if(row < tableRows && col >= tableCols)
+    {
+        int diff = (col+1) - tableCols;
+        for(int i = 0; i < table.size(); i++)
+        {
+            for(int j = 0; j < diff; j++)
+            {
+                table[i].push_back("");
+                tableForTypeOfTheCell[i].push_back(0);
+            }
+        }
+    }
+    else if(row >= tableRows && col >= tableCols)
+    {
+        int diffR = (row+1) - tableRows;
+        int diffC = (col+1) - tableCols;
+
+        for(int i = 0; i < table.size(); i++)
+        {
+            for(int j = 0; j < diffC; j++)
+            {
+                table[i].push_back("");
+                tableForTypeOfTheCell[i].push_back(0);
+            }
+        }   
+
+        std::vector<std::string> vec;
+        std::vector<std::size_t> vec2;
+        for(int i = 0; i < diffR; i++)
+        {
+            vec.clear();
+            vec2.clear();
+            for(int j = 0; j < col+1; j++)
+            {
+                vec.push_back("");
+                vec2.push_back(0);
+            }
+            this->table.push_back(vec);
+            this->tableForTypeOfTheCell.push_back(vec2);
+        }
+    }
+
     this->table[row][col] = value;
     setOneCellType(row,col);
 }
