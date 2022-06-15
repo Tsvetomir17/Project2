@@ -109,7 +109,7 @@ const std::size_t Table::getTableCols() const
     return size;
 }
 
-const std::vector<std::size_t> Table::getBiggestNumberOnEveryCol() const
+const std::vector<std::size_t> Table::getMaxNumberOnEveryCol() const
 {
     std::vector<std::size_t> result;
     int cols = this->getTableCols();
@@ -169,7 +169,7 @@ void Table::setTable(const std::string file_path)
 const void Table::print() const
 {
     std::size_t cols = this->getTableCols();
-    std::vector<std::size_t> maxNumberOnEveryCol = this->getBiggestNumberOnEveryCol();
+    std::vector<std::size_t> maxNumberOnEveryCol = this->getMaxNumberOnEveryCol();
     std::size_t toTheMaxOnCurrentCell;
     char whitespace = ' ';
     std::string currCell;
@@ -361,7 +361,8 @@ bool Table::isItCell(const std::string cell)
 
 const std::string Table::getCellValue(const Cell& cell) const
 {
-    if(this->tableForTypeOfTheCell[cell.getRow() - 1][cell.getCol() - 1] > 0)
+    if(cell.getRow() <= this->table.size() && cell.getCol() <= this->getTableCols() &&
+      this->tableForTypeOfTheCell[cell.getRow() - 1][cell.getCol() - 1] > 0)
     {
         return this->table[cell.getRow() - 1][cell.getCol() - 1];
     }

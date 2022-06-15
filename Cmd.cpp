@@ -11,14 +11,17 @@ const void CMD::help() const
     std::cout << "saveas            <file> saves the currently open file in <file>" << std::endl;
     std::cout << "help              prints this information" << std::endl;
     std::cout << "exit              exists the program" << std::endl;
+    std::cout << "print             prints the current table" << std::endl;
+    std::cout << "edit <cell>       edits cell (the cell format must be 'R*C*' -> * = number" << std::endl;
 }
 
 std::vector<std::vector<std::string>> CMD::open(const std::string file_path)
 {
     std::vector<std::vector<std::string>> currVector;
+
     std::vector<std::vector<std::string>> randomVector;
     std::vector<std::string> randomVec;
-    randomVec.push_back(" ,");
+    randomVec.push_back("");
     randomVector.push_back(randomVec);
 
     std::ifstream file(file_path);
@@ -28,9 +31,9 @@ std::vector<std::vector<std::string>> CMD::open(const std::string file_path)
     if(!file.is_open())
     {
         file.close();
-        std::ofstream file(file_path);
+        std::ofstream file(file_path); // създава файл, ако такъв не съществува
         file.close();
-        return randomVector;
+        return randomVector; // таблица 1:1, която се изпозлва само, ако в момента създадем файла
     }
 
     std::string str;
@@ -62,14 +65,14 @@ std::vector<std::vector<std::string>> CMD::open(const std::string file_path)
 
     file.close();
 
-    return currVector;
+    return currVector; // съдържанието на файла под форма на таблица
 }
 
 void CMD::close()
 {
     if(!getIsOpen())
     {
-        std::cout << "There is not an opened file!";
+        std::cout << "There is not an opened file!"; // не можем да затворим файл. ако няма отворен такъв
         return;
     }
 
@@ -113,14 +116,13 @@ int CMD::exit()
     if(getIsOpen())
     {
         std::cout << "You have an opened file , please close it first." << std::endl;
-        return 1;
+        return 1; // не може да се приключи програмата, докато има отворен файл
     }
     else
     {
         return 0;
     }
 }
-
 
 const bool CMD::getIsOpen() const
 {

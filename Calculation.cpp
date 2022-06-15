@@ -139,6 +139,6 @@ std::string calculation(const std::string str)
     }
 
     std::string result = std::to_string(numbers.top());
-    if(result.compare("inf") == 0) return "ERROR";
+    if(result.compare("inf") == 0) return "ERROR"; // при деление на 0, резултата е ERROR
     return result;
 }
